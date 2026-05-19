@@ -8,6 +8,74 @@ import 'package:sail_ui/sail_ui.dart';
 const int _canonicalLiteverseSlot = 1;
 const String _liteverseOpsStateUrl = 'http://127.0.0.1:8787/state';
 
+class LiteverseBridgeOverviewCard extends StatefulWidget {
+  const LiteverseBridgeOverviewCard({super.key});
+
+  @override
+  State<LiteverseBridgeOverviewCard> createState() => _LiteverseBridgeOverviewCardState();
+}
+
+class _LiteverseBridgeOverviewCardState extends State<LiteverseBridgeOverviewCard> {
+  late Future<LiteverseBridgeStatus> _statusFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _statusFuture = LiteverseBridgeStatus.fetch();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<LiteverseBridgeStatus>(
+      future: _statusFuture,
+      builder: (context, snapshot) {
+        final status = snapshot.data;
+
+        if (snapshot.connectionState == ConnectionState.waiting && status == null) {
+          return const SailCard(
+            title: 'LiteverseEVM',
+            subtitle: 'Loading read-only bridge status',
+            child: LinearProgressIndicator(),
+          );
+        }
+
+        if (snapshot.hasError || status == null) {
+          return SailCard(
+            title: 'LiteverseEVM',
+            subtitle: 'Read-only bridge status',
+            error: 'Could not read Liteverse Ops status',
+            child: SailText.secondary13('Open the Liteverse Bridge tab for more detail.'),
+          );
+        }
+
+        return SailCard(
+          title: 'LiteverseEVM',
+          subtitle: 'Read-only slot and bridge summary',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (status.slotMismatch) ...[
+                _SlotMismatchBanner(status: status),
+                const SizedBox(height: SailStyleValues.padding12),
+              ],
+              _MetricGrid(
+                children: [
+                  _MetricTile(label: 'Canonical slot', value: _canonicalLiteverseSlot.toString()),
+                  _MetricTile(label: 'Detected slot', value: status.detectedSlotLabel),
+                  _MetricTile(label: 'Litecoin network', value: status.litecoinChain ?? 'not available'),
+                  _MetricTile(label: 'Litecoin height', value: status.litecoinHeight?.toString() ?? 'not available'),
+                  _MetricTile(label: 'CTIP value', value: status.ctipValueLabel),
+                  _MetricTile(label: 'Ops API', value: status.opsHealthyLabel),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class LiteverseBridgeStatusPanel extends StatefulWidget {
   const LiteverseBridgeStatusPanel({super.key});
 

@@ -436,7 +436,7 @@ class BottomNavViewModel extends BaseViewModel with ChangeTrackingMixin {
     // Bitcoin Core first because nothing else can make progress without it.
     final mainchainLine = _statusLineFor(
       rpc: mainchain,
-      binaryLabel: 'Bitcoin Core',
+      binaryLabel: mainchainDisplayLabel,
     );
     if (mainchainLine != null) return mainchainLine;
 
@@ -488,6 +488,15 @@ class BottomNavViewModel extends BaseViewModel with ChangeTrackingMixin {
     return 'Waiting for $binaryLabel';
   }
 
+  String get mainchainDisplayLabel {
+    final conf = GetIt.I.get<BitcoinConfProvider>();
+    final network = conf.network;
+    final networkLabel = network == BitcoinNetwork.BITCOIN_NETWORK_SIGNET
+        ? 'Signet (${network.toDisplayName()})'
+        : network.toDisplayName();
+    return 'Litecoin Core $networkLabel';
+  }
+
   @override
   void dispose() {
     mainchain.removeListener(_onChange);
@@ -512,7 +521,7 @@ class ChainLoaders extends ViewModelWidget<BottomNavViewModel> {
     final additionalSynced = additionalConnected && viewModel.additionalSyncInfo!.isSynced;
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 300),
+      constraints: const BoxConstraints(maxWidth: 420),
       child: SailRow(
         spacing: 0,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -545,6 +554,7 @@ class ChainLoaders extends ViewModelWidget<BottomNavViewModel> {
               mainchainSynced) ...[
             DividerDot(),
             SailText.secondary12(
+              '${viewModel.mainchainDisplayLabel} · '
               '${formatWithThousandSpacers(viewModel.syncProvider.mainchainSyncInfo?.progressCurrent.toInt() ?? 'Loading')} blocks',
             ),
           ] else if (additionalSynced) ...[
@@ -636,7 +646,7 @@ class BalanceDisplay extends StatelessWidget {
                     description: 'Syncing wallet..',
                     enabled: balanceSyncing,
                     child: SailText.secondary12(
-                      '${formatBitcoin(balance, symbol: 'BTC')} ${usdBalance != null ? '(\$${formatWithThousandSpacers(usdBalance!.toInt())})' : ''}',
+                      '${formatBitcoin(balance, symbol: 'LTC')} ${usdBalance != null ? '(\$${formatWithThousandSpacers(usdBalance!.toInt())})' : ''}',
                     ),
                   ),
                 ],
@@ -658,7 +668,7 @@ class BalanceDisplay extends StatelessWidget {
                         height: SailStyleValues.iconSizeSecondary,
                       ),
                       SailText.secondary12(
-                        formatBitcoin(pendingBalance, symbol: 'BTC'),
+                        formatBitcoin(pendingBalance, symbol: 'LTC'),
                       ),
                     ],
                   ),

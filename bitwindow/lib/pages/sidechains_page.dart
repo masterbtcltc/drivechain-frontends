@@ -107,9 +107,17 @@ class SidechainsTab extends ViewModelWidget<SidechainsViewModel> {
         ),
       ],
     );
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const LiteverseBridgeOverviewCard(),
+        const SizedBox(height: SailStyleValues.padding12),
+        Expanded(child: mainContent),
+      ],
+    );
 
     if (!isDemoMode && hashWarning == null) {
-      return mainContent;
+      return content;
     }
 
     if (!isDemoMode) {
@@ -117,7 +125,7 @@ class SidechainsTab extends ViewModelWidget<SidechainsViewModel> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (hashWarning != null) _HashMismatchBanner(names: hashWarning),
-          Expanded(child: mainContent),
+          Expanded(child: content),
         ],
       );
     }
@@ -126,7 +134,7 @@ class SidechainsTab extends ViewModelWidget<SidechainsViewModel> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (hashWarning != null) _HashMismatchBanner(names: hashWarning),
-        Expanded(child: mainContent),
+        Expanded(child: content),
         const SizedBox(height: SailStyleValues.padding16),
         ViewModelBuilder<RecentActionsViewModel>.reactive(
           viewModelBuilder: () => RecentActionsViewModel(),

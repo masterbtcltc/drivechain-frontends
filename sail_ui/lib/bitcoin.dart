@@ -10,8 +10,8 @@ enum BitcoinUnit {
   sats
   ;
 
-  String get symbol => this == BitcoinUnit.btc ? 'BTC' : 'sats';
-  String get label => this == BitcoinUnit.btc ? 'BTC' : 'Satoshis';
+  String get symbol => this == BitcoinUnit.btc ? 'LTC' : 'sats';
+  String get label => this == BitcoinUnit.btc ? 'LTC' : 'Satoshis';
 }
 
 /// Utility class for Bitcoin amount formatting based on user's unit preference
@@ -46,7 +46,7 @@ int btcToSatoshi(double btc) {
   return (btc * satoshiPerBitcoin).toInt();
 }
 
-String formatBitcoin(num? number, {String symbol = 'BTC'}) {
+String formatBitcoin(num? number, {String symbol = 'LTC'}) {
   if (number == null || number.isNaN || number.isInfinite) {
     return '0.0000,0000${symbol.isEmpty ? '' : ' $symbol'}';
   }
