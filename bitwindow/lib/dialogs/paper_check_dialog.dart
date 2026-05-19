@@ -98,7 +98,7 @@ class _PaperCheckDialogState extends State<PaperCheckDialog> {
       final walletId = _walletReader.activeWalletId;
       if (walletId == null) throw Exception('No active wallet');
 
-      // Convert BTC to satoshis
+      // Convert LTC to satoshis
       final satoshis = (amount * 100000000).toInt();
 
       // Send funds to the generated address
@@ -181,7 +181,7 @@ class _PaperCheckDialogState extends State<PaperCheckDialog> {
                 ),
                 pw.SizedBox(height: 10),
                 pw.Text(
-                  'Amount: $amount BTC',
+                  'Amount: $amount LTC',
                   style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
                 ),
                 pw.SizedBox(height: 30),
@@ -378,7 +378,7 @@ class _PaperCheckDialogState extends State<PaperCheckDialog> {
 
                     // Amount input (if not yet funded)
                     if (_txid == null) ...[
-                      SailText.primary13('Check Amount (BTC):'),
+                      SailText.primary13('Check Amount (LTC):'),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _amountController,
@@ -508,7 +508,7 @@ class _PaperCheckDialogState extends State<PaperCheckDialog> {
                                     children: [
                                       SailText.secondary12('Check Amount'),
                                       const SizedBox(height: 4),
-                                      SailText.primary20('${_amountController.text} BTC', bold: true),
+                                      SailText.primary20('${_amountController.text} LTC', bold: true),
                                     ],
                                   ),
                                 ],

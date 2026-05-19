@@ -566,7 +566,7 @@ class _VerifyReportTabState extends State<VerifyReportTab> {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: _StatCard(
-                                      label: 'Total BTC',
+                                      label: 'Total LTC',
                                       value: formatter
                                           .formatBTC(result.totalBTC)
                                           .replaceAll(' ${formatter.currentUnit.symbol}', ''),
@@ -601,7 +601,7 @@ class _VerifyReportTabState extends State<VerifyReportTab> {
                                     children: [
                                       SailText.secondary12('Address', bold: true),
                                       const Spacer(),
-                                      SailText.secondary12('Amount (BTC)', bold: true),
+                                      SailText.secondary12('Amount (LTC)', bold: true),
                                       const SizedBox(width: 60),
                                       SailText.secondary12('Status', bold: true),
                                     ],
@@ -813,7 +813,7 @@ class ProofOfFundsViewModel extends BaseViewModel {
 
         if (signatureResult != null) {
           final csvLine =
-              'BTC,${utxo.txid},${utxo.address},$message,${signatureResult.signature},${utxo.amount},${signatureResult.publicKey}';
+              'LTC,${utxo.txid},${utxo.address},$message,${signatureResult.signature},${utxo.amount},${signatureResult.publicKey}';
           buffer.writeln(csvLine);
           log.i('Successfully signed UTXO ${utxo.txid}:${utxo.vout}');
           successCount++;
@@ -821,7 +821,7 @@ class ProofOfFundsViewModel extends BaseViewModel {
           log.w('Failed to sign UTXO ${utxo.txid}:${utxo.vout} - no signature generated');
           failCount++;
           // Write line without signature
-          final csvLine = 'BTC,${utxo.txid},${utxo.address},$message,,${utxo.amount},';
+          final csvLine = 'LTC,${utxo.txid},${utxo.address},$message,,${utxo.amount},';
           buffer.writeln(csvLine);
         }
 
@@ -834,7 +834,7 @@ class ProofOfFundsViewModel extends BaseViewModel {
         failCount++;
 
         // Write line without signature for debugging
-        final csvLine = 'BTC,${utxo.txid},${utxo.address},$message,,${utxo.amount},';
+        final csvLine = 'LTC,${utxo.txid},${utxo.address},$message,,${utxo.amount},';
         buffer.writeln(csvLine);
       }
     }

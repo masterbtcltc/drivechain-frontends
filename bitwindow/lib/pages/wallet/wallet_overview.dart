@@ -626,7 +626,7 @@ class OverviewViewModel extends BaseViewModel with ChangeTrackingMixin {
       'Type',
       'Address',
       'Label',
-      'Amount (BTC)',
+      'Amount (LTC)',
       'Amount (sats)',
       'Fee (sats)',
       'Note',

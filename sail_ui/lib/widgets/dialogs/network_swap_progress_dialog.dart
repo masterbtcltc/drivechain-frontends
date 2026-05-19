@@ -43,7 +43,7 @@ class _NetworkSwapProgressDialogState extends State<NetworkSwapProgressDialog> {
 
   void _initializeAllSteps() {
     final stepNames = [
-      'Stopping Bitcoin Core',
+      'Stopping Litecoin Core',
       'Stopping Enforcer',
       'Stopping LitWindow',
       'Waiting for processes to exit',

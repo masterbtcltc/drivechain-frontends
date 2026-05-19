@@ -534,7 +534,7 @@ class MultisigDescriptorBuilder {
         return result['descriptor'] as String;
       }
 
-      throw Exception('Bitcoin Core getdescriptorinfo returned invalid response: $result');
+      throw Exception('Litecoin Core getdescriptorinfo returned invalid response: $result');
     } catch (e) {
       GetIt.I.get<Logger>().e('Failed to add checksum to descriptor: $e');
       throw Exception('Failed to add checksum to descriptor: $e');

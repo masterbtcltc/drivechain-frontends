@@ -465,7 +465,7 @@ enum ParentChainType {
   ;
 
   String get value => switch (this) {
-    ParentChainType.btc => 'BTC',
+    ParentChainType.btc => 'LTC',
     ParentChainType.bch => 'BCH',
     ParentChainType.ltc => 'LTC',
     ParentChainType.signet => 'Signet',

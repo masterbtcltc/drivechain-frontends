@@ -852,7 +852,7 @@ class SidechainsViewModel extends BaseViewModel with ChangeTrackingMixin {
       return null;
     }
 
-    // Disable all interactions when using Bitcoin Core wallet
+    // Disable all interactions when using Litecoin Core wallet
     if (isUsingBitcoinCoreWallet) {
       return SailButton(
         key: ValueKey('disabled_slot_${sidechain.slot}_${sidechain.name}'),

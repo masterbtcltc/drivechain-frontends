@@ -220,7 +220,7 @@ class BottomNav extends StatelessWidget {
                       // independent connection state and must show it
                       // unconditionally; gating their card on Core's IBD
                       // hid the bitwindowd backend status entirely behind
-                      // a misleading "Waiting for Bitcoin Core header sync"
+                      // a misleading "Waiting for Litecoin Core header sync"
                       // message even when bitwindowd was healthy.
                       final isSidechain = additionalConnection.rpc.binary.chainLayer == 2;
                       final bool coreReady =
@@ -229,7 +229,7 @@ class BottomNav extends StatelessWidget {
                               !model.mainchain.initializingBinary &&
                               model.mainchain.startupError == null &&
                               !model.syncProvider.inHeaderSync);
-                      final infoMessage = isSidechain && !coreReady ? 'Waiting for Bitcoin Core header sync' : null;
+                      final infoMessage = isSidechain && !coreReady ? 'Waiting for Litecoin Core header sync' : null;
                       return DaemonConnectionCard(
                         connection: additionalConnection.rpc,
                         syncInfo: coreReady ? model.additionalSyncInfo : null,
@@ -433,7 +433,7 @@ class BottomNavViewModel extends BaseViewModel with ChangeTrackingMixin {
 
     // Precedence per service: connectionError (hard fail) > startupError (warmup message,
     // primary signal during boot per orchestrator design) > initializingBinary > !connected.
-    // Bitcoin Core first because nothing else can make progress without it.
+    // Litecoin Core first because nothing else can make progress without it.
     final mainchainLine = _statusLineFor(
       rpc: mainchain,
       binaryLabel: mainchainDisplayLabel,
@@ -703,7 +703,7 @@ class BalanceDisplayViewModel extends BaseViewModel with ChangeTrackingMixin {
   double get pendingBalance => _balanceProvider.pendingBalance;
   bool get balanceSyncing => !_balanceProvider.initialized;
   bool get showUnconfirmed => _showUnconfirmed;
-  double? get usdBalance => _priceProvider.btcToUsd(balance);
+  double? get usdBalance => _priceProvider.ltcToUsd(balance);
 
   void toggleUnconfirmed() {
     _showUnconfirmed = !_showUnconfirmed;

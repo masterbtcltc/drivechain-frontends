@@ -404,7 +404,7 @@ class ProcessManager extends ChangeNotifier {
   }
 
   DateTime? _extractTimestamp(String line) {
-    // Bitcoin Core timestamp format: 2025-11-17T06:08:29Z
+    // Litecoin Core timestamp format: 2025-11-17T06:08:29Z
     final timestampRegex = RegExp(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)');
     final match = timestampRegex.firstMatch(line);
     if (match != null) {

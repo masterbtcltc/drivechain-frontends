@@ -5,16 +5,16 @@ import 'package:http/http.dart' as http;
 import 'package:sail_ui/env.dart';
 import 'package:sail_ui/extensions/formatting.dart';
 
-/// Provider that fetches and maintains the current BTC/USD exchange rate
+/// Provider that fetches and maintains the current LTC/USD exchange rate.
 class PriceProvider extends ChangeNotifier {
-  double? btcusd;
+  double? ltcusd;
   DateTime? lastUpdated;
   String? error;
   bool isFetching = false;
   Timer? _fetchTimer;
 
-  /// URL for the blockchain.info ticker API
-  static const String _tickerUrl = 'https://blockchain.info/ticker';
+  /// URL for the CoinGecko Litecoin price API.
+  static const String _tickerUrl = 'https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd';
 
   PriceProvider() {
     // Fetch once immediately
@@ -31,7 +31,7 @@ class PriceProvider extends ChangeNotifier {
     _fetchTimer = Timer.periodic(Duration(seconds: 10), (timer) => fetch());
   }
 
-  /// Fetch the latest BTCUSD price from blockchain.info
+  /// Fetch the latest LTC/USD price.
   Future<void> fetch() async {
     if (isFetching) {
       return;
@@ -47,22 +47,22 @@ class PriceProvider extends ChangeNotifier {
         final data = json.decode(response.body) as Map<String, dynamic>;
 
         // Extract USD price
-        if (data.containsKey('USD') && data['USD'] is Map<String, dynamic>) {
-          final usdData = data['USD'] as Map<String, dynamic>;
+        if (data.containsKey('litecoin') && data['litecoin'] is Map<String, dynamic>) {
+          final usdData = data['litecoin'] as Map<String, dynamic>;
 
-          if (usdData.containsKey('last')) {
-            final price = usdData['last'];
+          if (usdData.containsKey('usd')) {
+            final price = usdData['usd'];
 
             // Convert to double if needed
             if (price is num) {
-              btcusd = price.toDouble();
+              ltcusd = price.toDouble();
               lastUpdated = DateTime.now();
               error = null;
             } else {
               error = 'Invalid price format from API';
             }
           } else {
-            error = 'USD price data missing "last" field';
+            error = 'USD price data missing "usd" field';
           }
         } else {
           error = 'USD price data not found in response';
@@ -78,13 +78,13 @@ class PriceProvider extends ChangeNotifier {
     }
   }
 
-  /// Format the BTC price as a USD string
+  /// Format the LTC price as a USD string
   String get formattedPrice {
-    if (btcusd == null) {
+    if (ltcusd == null) {
       return 'Loading...';
     }
 
-    return '\$${formatWithThousandSpacers(btcusd!.round())}';
+    return '\$${formatWithThousandSpacers(ltcusd!.round())}';
   }
 
   /// Get the age of the last price update
@@ -105,20 +105,20 @@ class PriceProvider extends ChangeNotifier {
     }
   }
 
-  /// Convert BTC amount to USD
-  double? btcToUsd(double btcAmount) {
-    if (btcusd == null) {
+  /// Convert LTC amount to USD.
+  double? ltcToUsd(double ltcAmount) {
+    if (ltcusd == null) {
       return null;
     }
-    return btcAmount * btcusd!;
+    return ltcAmount * ltcusd!;
   }
 
-  /// Convert USD amount to BTC
-  double? usdToBtc(double usdAmount) {
-    if (btcusd == null || btcusd == 0) {
+  /// Convert USD amount to LTC.
+  double? usdToLtc(double usdAmount) {
+    if (ltcusd == null || ltcusd == 0) {
       return null;
     }
-    return usdAmount / btcusd!;
+    return usdAmount / ltcusd!;
   }
 
   @override

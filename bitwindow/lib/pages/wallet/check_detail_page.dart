@@ -236,7 +236,7 @@ class CheckDetailPage extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: SailTheme.of(context).colors.background,
             foregroundColor: SailTheme.of(context).colors.text,
-            title: SailText.primary20('Check for $amountBTC BTC'),
+            title: SailText.primary20('Check for $amountBTC LTC'),
           ),
           body: Builder(
             builder: (context) {

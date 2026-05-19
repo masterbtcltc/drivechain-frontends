@@ -257,7 +257,7 @@ class ChecksTable extends StatelessWidget {
 
   String _formatSats(int sats) {
     final btc = sats / 100000000;
-    return '${btc.toStringAsFixed(8)} BTC';
+    return '${btc.toStringAsFixed(8)} LTC';
   }
 
   void _viewCheck(BuildContext context, Cheque check) {

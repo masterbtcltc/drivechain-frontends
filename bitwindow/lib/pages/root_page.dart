@@ -243,15 +243,15 @@ class _RootPageState extends State<RootPage> with WidgetsBindingObserver, Window
         onSelected: () => GetIt.I.get<AppRouter>().push(CreateCheckRoute()),
       ),
 
-      // Use Bitcoin
+      // Use Litecoin
       CommandItem(
         label: 'CPU Miner',
-        category: 'Use Bitcoin',
+        category: 'Use Litecoin',
         onSelected: () => GetIt.I.get<AppRouter>().push(CpuMiningRoute()),
       ),
       CommandItem(
         label: 'M4 Explorer',
-        category: 'Use Bitcoin',
+        category: 'Use Litecoin',
         onSelected: () {
           if (!_confProvider.networkSupportsSidechains) {
             GetIt.I.get<AppRouter>().push(
@@ -268,22 +268,22 @@ class _RootPageState extends State<RootPage> with WidgetsBindingObserver, Window
       ),
       CommandItem(
         label: 'Timestamp File(s)',
-        category: 'Use Bitcoin',
+        category: 'Use Litecoin',
         onSelected: () => GetIt.I.get<AppRouter>().push(const CreateTimestampRoute()),
       ),
       CommandItem(
         label: 'BitDrive',
-        category: 'Use Bitcoin',
+        category: 'Use Litecoin',
         onSelected: () => GetIt.I.get<WindowProvider>().open(SubWindowTypes.bitDrive),
       ),
       CommandItem(
         label: 'Sign / Verify Message',
-        category: 'Use Bitcoin',
+        category: 'Use Litecoin',
         onSelected: () => GetIt.I.get<WindowProvider>().open(SubWindowTypes.messageSigner),
       ),
       CommandItem(
         label: 'Sidechains',
-        category: 'Use Bitcoin',
+        category: 'Use Litecoin',
         onSelected: () {
           final tabsRouter = _routerKey.currentState?.controller;
           tabsRouter?.setActiveIndex(2);
@@ -646,9 +646,9 @@ class _RootPageState extends State<RootPage> with WidgetsBindingObserver, Window
               ],
             ),
 
-            // Use Bitcoin menu
+            // Use Litecoin menu
             PlatformMenu(
-              label: 'Use Bitcoin',
+              label: 'Use Litecoin',
               menus: [
                 PlatformMenuItemGroup(
                   members: [
@@ -1386,7 +1386,7 @@ class AboutBitwindowDialog extends StatelessWidget {
                     text: 'Copyright (C) 2009-2026 The Drivechain developers\n',
                   ),
                   const TextSpan(
-                    text: 'Copyright (C) 2009-2026 The Bitcoin Core developers\n\n',
+                    text: 'Copyright (C) 2011-2026 The Litecoin Core developers\n\n',
                   ),
                   const TextSpan(
                     text: 'Please contribute if you find Drivechain useful. Visit ',

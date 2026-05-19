@@ -564,7 +564,7 @@ abstract class Binary {
     return paths;
   }
 
-  /// Get Bitcoin Core wallet paths (wallets directory and named wallets)
+  /// Get Litecoin Core wallet paths (wallets directory and named wallets)
   Future<List<String>> _getBitcoinCoreWalletPaths(String networkDir) async {
     final paths = <String>[];
     final walletsDir = Directory(path.join(networkDir, 'wallets'));
@@ -928,7 +928,7 @@ abstract class Binary {
   }
 
   String get connectionString {
-    // For BitcoinCore, get the actual port from BitcoinConfProvider which handles
+    // For Litecoin Core, get the actual port from BitcoinConfProvider which handles
     // both network defaults and user's custom rpcport setting
     if (type == BinaryType.BINARY_TYPE_BITCOIND && port == 0) {
       try {
@@ -994,10 +994,10 @@ class _CacheEntry {
 
 class BitcoinCore extends Binary {
   BitcoinCore({
-    super.name = 'Bitcoin Core',
+    super.name = 'Litecoin Core',
     super.version = '30.2',
-    super.description = 'Bitcoin Core',
-    super.repoUrl = 'https://github.com/bitcoin/bitcoin',
+    super.description = 'Litecoin Core',
+    super.repoUrl = 'https://github.com/litecoin-project/litecoin',
     DirectoryConfig? directories,
     MetadataConfig? metadata,
     int? port,
@@ -1010,14 +1010,14 @@ class BitcoinCore extends Binary {
              DirectoryConfig(
                binary: {
                  ...allNetworks({
+                   OS.linux: '.litecoin',
+                   OS.macos: 'Litecoin',
+                   OS.windows: 'Litecoin',
+                 }),
+                 BitcoinNetwork.BITCOIN_NETWORK_FORKNET: {
                    OS.linux: '.drivechain',
                    OS.macos: 'Drivechain',
                    OS.windows: 'Drivechain',
-                 }),
-                 BitcoinNetwork.BITCOIN_NETWORK_MAINNET: {
-                   OS.linux: '.bitcoin',
-                   OS.macos: 'Bitcoin',
-                   OS.windows: 'Bitcoin',
                  },
                },
                flutterFrontend: {
@@ -1063,7 +1063,7 @@ class BitcoinCore extends Binary {
                updateable: false,
              ),
          // Port is determined by network
-         // mainnet: 8332, testnet: 18332, signet: 38332, regtest: 18443
+         // mainnet: 9332, testnet: 19332, signet: 38332, regtest: 19443
          port: port ?? 0, // 0 means use network default
        );
 
@@ -1606,9 +1606,9 @@ extension BinaryPaths on Binary {
     return switch (type) {
       BinaryType.BINARY_TYPE_BITCOIND => () {
         final network = GetIt.I.get<BitcoinConfProvider>().network;
-        // For mainnet, use standard Bitcoin datadir; otherwise use Drivechain datadir (respects custom datadir)
+        // For mainnet, use standard Litecoin datadir; otherwise use the configured datadir.
         final confDir = network == BitcoinNetwork.BITCOIN_NETWORK_MAINNET
-            ? path.join(BitcoinCore().appdir(), 'Bitcoin')
+            ? path.join(BitcoinCore().appdir(), 'Litecoin')
             : BitcoinCore().datadir();
 
         // Always check for bitcoin.conf first - user config takes priority
@@ -1618,7 +1618,7 @@ extension BinaryPaths on Binary {
         }
 
         // Use master config file in BitWindow directory (source of truth)
-        // A read-only copy is also placed in the Bitcoin/Drivechain dir for inspection
+        // A read-only copy is also placed in the Litecoin/Drivechain dir for inspection
         return path.join(BitWindow().rootDir(), kBitwindowBitcoinConfFilename);
       }(),
       _ => throw 'binary does not have a config file: $type',

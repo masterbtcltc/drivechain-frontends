@@ -236,8 +236,8 @@ extension NetworkExtensions on BitcoinNetwork {
     }
   }
 
-  /// Get the Bitcoin Core section name for Bitcoin Core settings (rpcport, etc.)
-  /// Both mainnet and forknet use 'main' for Bitcoin Core compatibility
+  /// Get the Litecoin Core section name for Core settings (rpcport, etc.)
+  /// Both mainnet and forknet use 'main' for Core compatibility
   String toCoreNetworkForBitcoinSettings() {
     switch (this) {
       case BitcoinNetwork.BITCOIN_NETWORK_MAINNET:

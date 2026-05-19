@@ -40,13 +40,13 @@ class CoreConnectionSettings extends ChangeNotifier {
   static CoreConnectionSettings empty([
     BitcoinNetwork network = BitcoinNetwork.BITCOIN_NETWORK_SIGNET,
   ]) {
-    // Use correct default port based on network
+    // Use Litecoin Core default ports based on network.
     final defaultPort = switch (network) {
-      BitcoinNetwork.BITCOIN_NETWORK_MAINNET => 8332,
+      BitcoinNetwork.BITCOIN_NETWORK_MAINNET => 9332,
       BitcoinNetwork.BITCOIN_NETWORK_FORKNET => 18301,
-      BitcoinNetwork.BITCOIN_NETWORK_TESTNET => 18332,
+      BitcoinNetwork.BITCOIN_NETWORK_TESTNET => 19332,
       BitcoinNetwork.BITCOIN_NETWORK_SIGNET => 38332,
-      BitcoinNetwork.BITCOIN_NETWORK_REGTEST => 18443,
+      BitcoinNetwork.BITCOIN_NETWORK_REGTEST => 19443,
       _ => 38332, // fallback to signet
     };
 
@@ -146,7 +146,7 @@ CoreConnectionSettings readMainchainConf({BitcoinConfProvider? provider}) {
     username = configUsername!;
     password = configPassword!;
   } else {
-    // Try cookie auth - Bitcoin Core creates .cookie when no rpcuser/rpcpassword configured
+    // Try cookie auth - Litecoin Core creates .cookie when no rpcuser/rpcpassword configured
     // Use provider's detectedDataDir if available, otherwise use rootDir to avoid GetIt during init
     final datadir = confProvider.detectedDataDir?.isNotEmpty == true
         ? confProvider.detectedDataDir!

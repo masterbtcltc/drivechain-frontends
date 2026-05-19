@@ -181,7 +181,7 @@ class _StoreTab extends StatelessWidget {
                               SizedBox(
                                 width: 150,
                                 child: NumericField(
-                                  label: 'Fee (BTC)',
+                                  label: 'Fee (LTC)',
                                   controller: model.feeController,
                                   hintText: '0.0001',
                                 ),

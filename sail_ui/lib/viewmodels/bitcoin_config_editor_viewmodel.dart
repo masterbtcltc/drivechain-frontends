@@ -136,7 +136,7 @@ class BitcoinConfigEditorViewModel extends ChangeNotifier {
       MaterialPageRoute(
         builder: (_) => const L1RestartPage(
           reason:
-              'Bitcoin Core needs to restart for the new configuration to take effect. Existing chain data is kept.',
+              'Litecoin Core needs to restart for the new configuration to take effect. Existing chain data is kept.',
         ),
       ),
     );
