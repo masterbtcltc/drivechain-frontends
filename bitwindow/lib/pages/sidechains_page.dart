@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:bitwindow/litwindow_liteverse.dart';
 import 'package:bitwindow/pages/explorer/block_explorer_dialog.dart';
 import 'package:bitwindow/pages/liteverse_bridge_status_panel.dart';
 import 'package:bitwindow/providers/sidechain_provider.dart';
@@ -16,12 +17,6 @@ import 'package:sail_ui/gen/wallet/v1/wallet.pb.dart';
 import 'package:sail_ui/pages/router.gr.dart';
 import 'package:sail_ui/sail_ui.dart';
 import 'package:stacked/stacked.dart';
-
-const int _liteverseEvmSlot = 1;
-const String _liteverseEvmName = 'LiteverseEVM';
-const List<int> litWindowPrimarySidechainSlots = [_liteverseEvmSlot];
-
-bool isLitWindowPrimarySidechainSlot(int slot) => slot == _liteverseEvmSlot;
 
 @RoutePage()
 class SidechainsPage extends StatelessWidget {
@@ -754,7 +749,7 @@ class SidechainsViewModel extends BaseViewModel with ChangeTrackingMixin {
   bool isLitWindowVisibleSidechainSlot(int slot) => isLitWindowPrimarySidechainSlot(slot);
 
   String sidechainDisplayName(int slot, SidechainOverview? sidechain) {
-    if (slot == _liteverseEvmSlot) return _liteverseEvmName;
+    if (slot == liteverseEvmSlot) return liteverseEvmName;
     return sidechain?.info.title ?? '';
   }
 

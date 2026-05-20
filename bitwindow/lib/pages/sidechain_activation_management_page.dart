@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:bitwindow/litwindow_liteverse.dart';
 import 'package:bitwindow/pages/explorer/block_explorer_dialog.dart';
-import 'package:bitwindow/pages/sidechain_proposal_page.dart';
 import 'package:bitwindow/providers/sidechain_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -84,10 +84,12 @@ class SidechainActivationManagementPage extends StatelessWidget {
 class SidechainActivationManagementViewModel extends BaseViewModel {
   final SidechainProvider sidechainProvider = GetIt.I.get<SidechainProvider>();
 
-  List<SidechainOverview?> get activeSidechains =>
-      sidechainProvider.sidechains.where((sidechain) => sidechain != null).toList();
+  List<SidechainOverview?> get activeSidechains => litWindowVisibleActiveSidechains(sidechainProvider.sidechains);
 
-  List<SidechainProposal> get sidechainProposals => sidechainProvider.sidechainProposals;
+  List<SidechainProposal> get sidechainProposals =>
+      litWindowVisibleSidechainProposals(sidechainProvider.sidechainProposals);
+
+  bool get liteverseSlotActive => activeSidechains.any((sidechain) => sidechain?.info.slot == liteverseEvmSlot);
 
   SidechainActivationManagementViewModel() {
     sidechainProvider.addListener(notifyListeners);
@@ -165,9 +167,69 @@ class SidechainActivationManagementView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: SailStyleValues.padding16),
+            LitWindowSidechainActivationStatusCard(
+              slotActive: model.liteverseSlotActive,
+              pendingProposalCount: model.sidechainProposals.length,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LitWindowSidechainActivationStatusCard extends StatelessWidget {
+  final bool slotActive;
+  final int pendingProposalCount;
+
+  const LitWindowSidechainActivationStatusCard({
+    super.key,
+    required this.slotActive,
+    required this.pendingProposalCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = SailTheme.of(context);
+
+    return SailCard(
+      title: 'LiteverseEVM Sidechain',
+      subtitle: slotActive ? 'Slot 1 is active' : 'Proposal requires operator action',
+      child: Padding(
+        padding: const EdgeInsets.all(SailStyleValues.padding16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              slotActive ? Icons.check_circle_outline : Icons.info_outline,
+              color: slotActive ? theme.colors.success : theme.colors.orange,
+              size: 20,
+            ),
+            const SizedBox(width: SailStyleValues.padding12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SailText.primary13(
+                    slotActive
+                        ? litWindowSidechainActiveMessage
+                        : 'LiteverseEVM is the only LitWindow sidechain and must use slot 1.',
+                  ),
+                  const SizedBox(height: SailStyleValues.padding08),
+                  SailText.secondary13(
+                    slotActive
+                        ? 'Activation is read-only here; no proposal, signing, or broadcast is available from this view.'
+                        : '$litWindowSidechainProposalUnavailableMessage Pending slot-1 proposals: $pendingProposalCount.',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: SailStyleValues.padding12),
             SailButton(
-              label: 'Propose New Sidechain',
-              onPressed: () async => await showSidechainProposalModal(context),
+              label: slotActive ? 'Slot 1 Active' : 'Proposal Disabled',
+              disabled: true,
+              onPressed: null,
             ),
           ],
         ),

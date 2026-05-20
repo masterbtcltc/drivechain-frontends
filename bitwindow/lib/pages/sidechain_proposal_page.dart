@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:bitwindow/litwindow_liteverse.dart';
 import 'package:bitwindow/providers/sidechain_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -20,7 +21,62 @@ class SidechainProposalPage extends StatelessWidget {
     }
 
     return const QtPage(
-      child: SidechainProposalView(),
+      child: LitWindowSidechainProposalUnavailableView(),
+    );
+  }
+}
+
+class LitWindowSidechainProposalUnavailableView extends StatelessWidget {
+  const LitWindowSidechainProposalUnavailableView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = SailTheme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(SailStyleValues.padding16),
+      child: SailCard(
+        title: 'LiteverseEVM Sidechain',
+        subtitle: 'Read-only activation status',
+        child: Padding(
+          padding: const EdgeInsets.all(SailStyleValues.padding20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.check_circle_outline, color: theme.colors.success, size: 20),
+                  const SizedBox(width: SailStyleValues.padding12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SailText.primary15(litWindowSidechainActiveMessage),
+                        const SizedBox(height: SailStyleValues.padding08),
+                        SailText.secondary13(
+                          '$litWindowSidechainProposalUnavailableMessage This view never signs, broadcasts, or proposes a sidechain.',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: SailStyleValues.padding20),
+              Align(
+                alignment: Alignment.centerRight,
+                child: SailButton(
+                  label: 'Read-only',
+                  disabled: true,
+                  onPressed: null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
