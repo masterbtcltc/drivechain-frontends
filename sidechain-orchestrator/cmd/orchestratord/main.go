@@ -269,8 +269,15 @@ func run(cctx *cli.Context) error {
 	scConfPath, scConfH := rpc.NewSidechainConfServiceHandler(sidechainConfHandler, connect.WithInterceptors())
 	mux.Handle(scConfPath, scConfH)
 
-	// Per-sidechain typed RPC services (proxy to sidechain binary JSON-RPC)
-	for name, cfg := range orch.Configs() {
+	// Per-sidechain typed RPC services (proxy to sidechain binary JSON-RPC).
+	// LitWindow only registers default-managed sidechains here. The upstream
+	// Bitcoin sidechains may still exist in chains_config.json for compatibility,
+	// but they are not part of the Litecoin/Liteverse runtime surface.
+	for name := range orch.SidechainConfs {
+		cfg, ok := orch.Configs()[name]
+		if !ok {
+			continue
+		}
 		proxy := sidechain.NewJSONRPCProxy("127.0.0.1", cfg.Port)
 		switch name {
 		case "thunder":

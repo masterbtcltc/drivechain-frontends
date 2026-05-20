@@ -343,9 +343,12 @@ func New(dataDir, network, bitwindowDir string, configs []BinaryConfig, log zero
 			orch.EnforcerConf = enforcerConf
 		}
 
-		// Initialize sidechain conf managers for all known sidechains
+		// Initialize sidechain conf managers for LitWindow's default
+		// sidechains only. The upstream Bitcoin sidechain catalog stays
+		// available in config.KnownSidechainSpecs, but this branch presents
+		// Litecoin/Liteverse as the default product surface.
 		scConfs := make(map[string]*config.SidechainConfManager)
-		for key, spec := range config.KnownSidechainSpecs {
+		for key, spec := range config.DefaultSidechainSpecs {
 			scm, err := config.NewSidechainConfManager(spec, bitcoinConf, log)
 			if err != nil {
 				log.Warn().Err(err).Str("sidechain", key).Msg("failed to initialize sidechain config manager")
@@ -1901,18 +1904,18 @@ func (o *Orchestrator) fetchMainchainBlockchainInfo(ctx context.Context) (*Mainc
 
 	var raw map[string]interface{}
 	if err := json.Unmarshal(result, &raw); err != nil {
-    		return nil, fmt.Errorf("decode raw getblockchaininfo: %w", err)
+		return nil, fmt.Errorf("decode raw getblockchaininfo: %w", err)
 	}
 
 	cleaned, err := json.Marshal(raw)
 	if err != nil {
-    		return nil, fmt.Errorf("re-encode getblockchaininfo: %w", err)
-	}	
+		return nil, fmt.Errorf("re-encode getblockchaininfo: %w", err)
+	}
 
-var info MainchainBlockchainInfo
-if err := json.Unmarshal(cleaned, &info); err != nil {
-    return nil, fmt.Errorf("decode cleaned getblockchaininfo: %w", err)
-}
+	var info MainchainBlockchainInfo
+	if err := json.Unmarshal(cleaned, &info); err != nil {
+		return nil, fmt.Errorf("decode cleaned getblockchaininfo: %w", err)
+	}
 
 	return &info, nil
 }

@@ -70,10 +70,42 @@ String calculateLabel(RecipientModel recipient, int index, BitcoinUnit currentUn
     return recipientLabel;
   }
 
-  final amountBTC = parseAmountInUnit(recipient.amountController.text, currentUnit);
-  final formattedAmount = formatBitcoinWithUnit(amountBTC, currentUnit);
+  final amountLtc = parseAmountInUnit(recipient.amountController.text, currentUnit);
+  final formattedAmount = formatBitcoinWithUnit(amountLtc, currentUnit);
 
   return '$recipientLabel ($formattedAmount)';
+}
+
+String normalizeLitecoinRecipientInput(String input) {
+  final trimmed = input.trim();
+  if (!trimmed.contains(':')) return trimmed;
+  return BitcoinURI.parse(trimmed).address;
+}
+
+bool isSupportedLitecoinRecipientInput(String input) {
+  final trimmed = input.trim();
+  if (trimmed.isEmpty) return false;
+
+  String address;
+  try {
+    address = normalizeLitecoinRecipientInput(trimmed);
+  } catch (_) {
+    return false;
+  }
+
+  final lower = address.toLowerCase();
+  if (lower.startsWith('bc1') || lower.startsWith('tb1') || lower.startsWith('bcrt')) {
+    return false;
+  }
+
+  if (lower.startsWith('tltc1') || lower.startsWith('ltc1')) {
+    return true;
+  }
+
+  // Let Litecoin Core perform full validation for Litecoin legacy/base58
+  // formats while still rejecting obvious Bitcoin legacy/testnet prefixes.
+  final litecoinLegacyLike = RegExp(r'^[LMQ][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{25,63}$');
+  return litecoinLegacyLike.hasMatch(address);
 }
 
 class PayToCard extends ViewModelWidget<SendPageViewModel> {
@@ -169,9 +201,9 @@ class _RecipientFields extends StatelessWidget {
       children: [
         SailTextField(
           key: Key('recipient_address_$key'),
-          label: 'Address',
+          label: 'Litecoin signet address',
           controller: recipient.addressController,
-          hintText: 'Enter a single L1 bitcoin-address (e.g. 1NS17iag...)',
+          hintText: 'Enter a tLTC address, for example tltc1...',
           size: TextFieldSize.small,
           suffixWidget: SailRow(
             children: [
@@ -495,8 +527,8 @@ class SendPageViewModel extends BaseViewModel {
       double sumOtherRecipients = 0.0;
       for (int i = 0; i < recipients.length; i++) {
         if (i == index) continue;
-        final amountBTC = parseAmountInUnit(recipients[i].amountController.text, currentUnit);
-        sumOtherRecipients += amountBTC;
+        final amountLtc = parseAmountInUnit(recipients[i].amountController.text, currentUnit);
+        sumOtherRecipients += amountLtc;
       }
 
       // 2. Calculate available balance minus fee
@@ -565,7 +597,14 @@ class SendPageViewModel extends BaseViewModel {
       final destinations = <String, int>{};
       for (int i = 0; i < recipients.length; i++) {
         final r = recipients[i];
-        final address = r.addressController.text;
+        final addressInput = r.addressController.text.trim();
+        if (!isSupportedLitecoinRecipientInput(addressInput)) {
+          showSnackBar(context, 'Please enter a Litecoin signet/tLTC recipient address.');
+          setBusy(false);
+          return;
+        }
+
+        final address = normalizeLitecoinRecipientInput(addressInput);
         final satoshis = parseAmountToSatoshis(r.amountController.text, currentUnit);
 
         // Sum amounts for duplicate addresses
@@ -687,9 +726,9 @@ class SendPageViewModel extends BaseViewModel {
         EstimateSmartFeeRequest()..confTarget = Int64(confTarget),
       );
       if (response.hasFeeRate()) {
-        // Convert BTC/kvB to sats/byte, then estimate for a typical transaction
-        final btcPerKvb = response.feeRate;
-        final satsPerByte = (btcPerKvb * 100000000) / 1000;
+        // Litecoin Core reports fee rate in coins/kvB; convert to sats/byte.
+        final ltcPerKvb = response.feeRate;
+        final satsPerByte = (ltcPerKvb * 100000000) / 1000;
 
         // Estimate transaction size: base (10) + inputs (~148 each) + outputs (~34 each)
         final numInputs = selectedUtxos.isEmpty ? 2 : selectedUtxos.length;

@@ -13,15 +13,23 @@ class BitcoinURI {
     Map<String, String>? extraParams,
   }) : extraParams = extraParams ?? {};
 
-  /// Parses a Bitcoin URI string according to BIP-0021
+  /// Parses a Litecoin payment URI. The class name is kept for compatibility
+  /// with the existing internal routing, but LitWindow accepts Litecoin-native
+  /// URI schemes for user input.
   /// Throws FormatException if URI is invalid
   static BitcoinURI parse(String uri) {
-    if (!uri.toLowerCase().startsWith('bitcoin:')) {
-      throw const FormatException('Not a bitcoin URI');
+    final schemeSeparator = uri.indexOf(':');
+    if (schemeSeparator <= 0) {
+      throw const FormatException('Not a Litecoin URI');
+    }
+
+    final scheme = uri.substring(0, schemeSeparator).toLowerCase();
+    if (!{'litecoin', 'signetcash', 'tltc'}.contains(scheme)) {
+      throw const FormatException('Not a Litecoin URI');
     }
 
     // Split the URI into address and query parts
-    final parts = uri.substring(8).split('?');
+    final parts = uri.substring(schemeSeparator + 1).split('?');
     if (parts.isEmpty || parts[0].isEmpty) {
       throw const FormatException('No address specified');
     }
@@ -67,7 +75,7 @@ class BitcoinURI {
     );
   }
 
-  /// Validates if a string could be a valid Bitcoin URI
+  /// Validates if a string could be a valid Litecoin URI
   static bool isValidURI(String uri) {
     try {
       parse(uri);

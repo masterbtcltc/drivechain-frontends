@@ -255,15 +255,10 @@ List<Binary> get coreBinaries => [
   resolveFromConfig(BinaryType.BINARY_TYPE_ORCHESTRATORD, () => Orchestratord()),
 ];
 
-List<Binary> get sidechainBinaries => [
-  resolveFromConfig(BinaryType.BINARY_TYPE_THUNDER, () => Thunder()),
-  resolveFromConfig(BinaryType.BINARY_TYPE_TRUTHCOIN, () => Truthcoin()),
-  resolveFromConfig(BinaryType.BINARY_TYPE_PHOTON, () => Photon()),
-  resolveFromConfig(BinaryType.BINARY_TYPE_BITNAMES, () => BitNames()),
-  resolveFromConfig(BinaryType.BINARY_TYPE_BITASSETS, () => BitAssets()),
-  resolveFromConfig(BinaryType.BINARY_TYPE_COINSHIFT, () => CoinShift()),
-  resolveFromConfig(BinaryType.BINARY_TYPE_ZSIDE, () => ZSide()),
-];
+// LitWindow is a Litecoin/Liteverse client. Keep upstream sidechain binary
+// definitions available for compatibility, but do not register Bitcoin
+// sidechains as default managed sidechains in this branch.
+List<Binary> get sidechainBinaries => [];
 
 Binary resolveFromConfig(BinaryType type, Binary Function() fallback) {
   if (GetIt.I.isRegistered<ChainsConfigProvider>()) {

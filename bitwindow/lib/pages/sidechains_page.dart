@@ -3,13 +3,10 @@ import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 import 'package:bitwindow/pages/explorer/block_explorer_dialog.dart';
 import 'package:bitwindow/pages/liteverse_bridge_status_panel.dart';
-import 'package:bitwindow/pages/sidechain_activation_management_page.dart';
 import 'package:bitwindow/providers/sidechain_provider.dart';
 import 'package:bitwindow/providers/transactions_provider.dart';
 import 'package:bitwindow/routing/router.dart';
-import 'package:bitwindow/widgets/fast_withdrawal_tab.dart';
 import 'package:bitwindow/widgets/homepage_widget_catalog.dart';
-import 'package:bitwindow/widgets/starters_tab.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +16,12 @@ import 'package:sail_ui/gen/wallet/v1/wallet.pb.dart';
 import 'package:sail_ui/pages/router.gr.dart';
 import 'package:sail_ui/sail_ui.dart';
 import 'package:stacked/stacked.dart';
+
+const int _liteverseEvmSlot = 1;
+const String _liteverseEvmName = 'LiteverseEVM';
+const List<int> litWindowPrimarySidechainSlots = [_liteverseEvmSlot];
+
+bool isLitWindowPrimarySidechainSlot(int slot) => slot == _liteverseEvmSlot;
 
 @RoutePage()
 class SidechainsPage extends StatelessWidget {
@@ -60,14 +63,6 @@ class SidechainsPage extends StatelessWidget {
               TabItem(
                 label: 'Overview',
                 child: SidechainsTab(),
-              ),
-              TabItem(
-                label: 'Fast Withdrawal',
-                child: FastWithdrawalTab(),
-              ),
-              TabItem(
-                label: 'Starters',
-                child: StartersTab(),
               ),
               TabItem(
                 label: 'Liteverse Bridge',
@@ -220,9 +215,8 @@ class SidechainsList extends ViewModelWidget<SidechainsViewModel> {
               SailText.primary15('What are Sidechains?'),
               const SailSpacing(SailStyleValues.padding08),
               SailText.secondary13(
-                'Sidechains allow you to move your Bitcoin to separate blockchains with different features, '
-                'while maintaining the security and scarcity of Bitcoin. Think of them as Bitcoin-backed '
-                'altcoins that you can freely move between.',
+                'LiteverseEVM lets you track the Litecoin signet drivechain without leaving LitWindow. '
+                'This branch treats Liteverse as the canonical slot 1 sidechain.',
               ),
               const SailSpacing(SailStyleValues.padding20),
               SailText.primary15('How to Enable Sidechains'),
@@ -252,17 +246,10 @@ class SidechainsList extends ViewModelWidget<SidechainsViewModel> {
 
     return SailCard(
       title: 'Sidechains',
-      titleTooltip:
-          'List of all active sidechains with accompanying balance, and all empty slots where future sidechains will be added',
+      titleTooltip: 'LitWindow shows LiteverseEVM as the canonical Litecoin/Liteverse sidechain at slot 1',
       subtitle: viewModel._enforcerRPC.initializingBinary ? 'Enforcer is initializing...' : null,
       error: viewModel._enforcerRPC.initializingBinary ? null : error,
-      widgetHeaderEnd: smallVersion
-          ? null
-          : SailToggle(
-              label: 'Show only filled slots',
-              value: viewModel.showOnlyFilled,
-              onChanged: (value) => viewModel.setShowOnlyFilled(value),
-            ),
+      widgetHeaderEnd: null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -270,19 +257,9 @@ class SidechainsList extends ViewModelWidget<SidechainsViewModel> {
             child: SailSkeletonizer(
               description: 'Waiting for enforcer to become available..',
               enabled: viewModel.loading,
-              child: viewModel.showOnlyFilled ? OnlyFilledTable() : FullTable(),
+              child: OnlyFilledTable(),
             ),
           ),
-          const SizedBox(height: SailStyleValues.padding16),
-          if (!smallVersion)
-            Center(
-              child: SailButton(
-                label: 'Add / Remove',
-                onPressed: viewModel.isUsingBitcoinCoreWallet
-                    ? null
-                    : () => showSidechainActivationManagementModal(context),
-              ),
-            ),
         ],
       ),
     );
@@ -296,13 +273,7 @@ class OnlyFilledTable extends ViewModelWidget<SidechainsViewModel> {
   Widget build(BuildContext context, SidechainsViewModel viewModel) {
     final formatter = GetIt.I<FormatterProvider>();
 
-    // Filter to only show filled slots
-    final filledSlots = <int>[];
-    for (int slotNumber = 0; slotNumber < viewModel.sidechains.length; slotNumber++) {
-      if (viewModel.sidechains[slotNumber] != null) {
-        filledSlots.add(slotNumber);
-      }
-    }
+    final filledSlots = viewModel.visibleFilledSidechainSlots;
 
     return ListenableBuilder(
       listenable: formatter,
@@ -346,7 +317,7 @@ class OnlyFilledTable extends ViewModelWidget<SidechainsViewModel> {
 
           return [
             SailTableCell(value: '$slot:', textColor: textColor),
-            SailTableCell(value: sidechain?.info.title ?? '', textColor: textColor),
+            SailTableCell(value: viewModel.sidechainDisplayName(slot, sidechain), textColor: textColor),
             SailTableCell(
               value: formatter.formatSats(sidechain?.info.balanceSatoshi.toInt() ?? 0),
               textColor: textColor,
@@ -424,8 +395,8 @@ class OnlyFilledTable extends ViewModelWidget<SidechainsViewModel> {
               SailTableCell(value: ''),
           ];
         },
-        rowCount: filledSlots.length, // Only show filled slots
-        emptyPlaceholder: 'No active sidechains',
+        rowCount: filledSlots.length,
+        emptyPlaceholder: 'LiteverseEVM slot 1 is not active yet',
         sortAscending: viewModel.sortAscending,
         sortColumnIndex: ['slot', 'name', 'balance', 'action', 'deposit', 'update'].indexOf(viewModel.sortColumn),
         onSort: (columnIndex, ascending) => viewModel.sortSidechains(viewModel.sortColumn),
@@ -511,12 +482,13 @@ class FullTable extends ViewModelWidget<SidechainsViewModel> {
   @override
   Widget build(BuildContext context, SidechainsViewModel viewModel) {
     final formatter = GetIt.I<FormatterProvider>();
+    final visibleSlots = viewModel.visibleSidechainSlots;
 
     return ListenableBuilder(
       listenable: formatter,
       builder: (context, child) => SailTable(
         key: ValueKey('sidechains_table_full'),
-        getRowId: (index) => index.toString(),
+        getRowId: (index) => visibleSlots[index].toString(),
         headerBuilder: (context) => [
           SailTableHeaderCell(
             name: 'Slot',
@@ -544,7 +516,7 @@ class FullTable extends ViewModelWidget<SidechainsViewModel> {
           ),
         ],
         rowBuilder: (context, row, selected) {
-          final slot = row; // This is now the slot number (0-255)
+          final slot = visibleSlots[row];
           final sidechain = viewModel.sidechains[slot];
           final textColor = sidechain == null ? context.sailTheme.colors.textSecondary : context.sailTheme.colors.text;
           final buttonWidget = viewModel.sidechainWidget(slot);
@@ -554,7 +526,7 @@ class FullTable extends ViewModelWidget<SidechainsViewModel> {
 
           return [
             SailTableCell(value: '$slot:', textColor: textColor),
-            SailTableCell(value: sidechain?.info.title ?? '', textColor: textColor),
+            SailTableCell(value: viewModel.sidechainDisplayName(slot, sidechain), textColor: textColor),
             SailTableCell(
               value: formatter.formatSats(sidechain?.info.balanceSatoshi.toInt() ?? 0),
               textColor: textColor,
@@ -618,7 +590,7 @@ class FullTable extends ViewModelWidget<SidechainsViewModel> {
               Container(),
           ];
         },
-        rowCount: 256, // Show all slots
+        rowCount: visibleSlots.length,
         sortAscending: viewModel.sortAscending,
         sortColumnIndex: ['slot', 'name', 'balance', 'action', 'deposit', 'update'].indexOf(viewModel.sortColumn),
         onSort: (columnIndex, ascending) => viewModel.sortSidechains(viewModel.sortColumn),
@@ -772,6 +744,20 @@ class SidechainsViewModel extends BaseViewModel with ChangeTrackingMixin {
   List<SidechainOverview?> get sidechains => _sidechainProvider.sidechains;
   List<SidechainOverview?> _sortedSidechains = [];
 
+  List<int> get visibleSidechainSlots => litWindowPrimarySidechainSlots;
+
+  List<int> get visibleFilledSidechainSlots => [
+    for (var slot = 0; slot < sidechains.length; slot++)
+      if (isLitWindowVisibleSidechainSlot(slot) && sidechains[slot] != null) slot,
+  ];
+
+  bool isLitWindowVisibleSidechainSlot(int slot) => isLitWindowPrimarySidechainSlot(slot);
+
+  String sidechainDisplayName(int slot, SidechainOverview? sidechain) {
+    if (slot == _liteverseEvmSlot) return _liteverseEvmName;
+    return sidechain?.info.title ?? '';
+  }
+
   String sortColumn = 'slot';
   bool sortAscending = true;
 
@@ -782,6 +768,7 @@ class SidechainsViewModel extends BaseViewModel with ChangeTrackingMixin {
   }
 
   Sidechain? sidechainForSlot(int slot) {
+    if (!isLitWindowVisibleSidechainSlot(slot)) return null;
     return _binaryProvider.binaries.firstWhereOrNull((b) => b is Sidechain && b.slot == slot) as Sidechain?;
   }
 
@@ -814,6 +801,9 @@ class SidechainsViewModel extends BaseViewModel with ChangeTrackingMixin {
   String? get hashMismatchWarning {
     final mismatched = <String>[];
     for (final binary in _binaryProvider.binaries) {
+      if (binary is Sidechain && !isLitWindowVisibleSidechainSlot(binary.slot)) {
+        continue;
+      }
       if (binary.downloadInfo.hashMatch == false) {
         mismatched.add(binary.name);
       }

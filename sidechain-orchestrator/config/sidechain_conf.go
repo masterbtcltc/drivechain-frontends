@@ -444,3 +444,9 @@ var KnownSidechainSpecs = map[string]SidechainConfSpec{
 		DirKey:         "coinshift",
 	},
 }
+
+// DefaultSidechainSpecs defines the sidechains managed automatically by
+// LitWindow. The upstream Bitcoin sidechains remain in KnownSidechainSpecs for
+// compatibility, but this Litecoin/Liteverse branch should not expose them as
+// default runtime sidechains.
+var DefaultSidechainSpecs = map[string]SidechainConfSpec{}

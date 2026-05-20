@@ -73,4 +73,78 @@ void main() {
     expect(status.bmmStatusLabel, 'no recent BMM events');
     expect(status.relayerStateLabel, 'state file not present');
   });
+
+  test('LiteverseBridgeStatus clears mismatch for canonical slot 1', () {
+    final status = LiteverseBridgeStatus.fromOpsState({
+      'ok': true,
+      'config': {
+        'sidechainId': 1,
+      },
+      'issues': [],
+      'litecoin': {
+        'ok': true,
+        'value': {
+          'chain': 'signet',
+          'blocks': 2058,
+        },
+      },
+      'evm': {
+        'ok': true,
+        'value': {
+          'blockNumber': 86912,
+          'peerCount': 3,
+          'bridgeAddress': '0x512958b290f86e82f544af7f3f2684244bca7516',
+        },
+      },
+      'enforcer': {
+        'ok': true,
+        'value': {
+          'ping': 'Pong',
+          'configuredSidechainId': 1,
+          'activeSidechains': [
+            {
+              'proposal': {'sidechain_number': 1},
+            },
+            {
+              'proposal': {'sidechain_number': 73},
+            },
+          ],
+          'ctipBySidechain': {
+            '1': {
+              'ok': true,
+              'value': {
+                'outpoint': '553de56aa2dac53751ca19c2aecec9b2273046df9aad28d025ef40b3c5ab7b08:0',
+                'value': 8600,
+              },
+            },
+            '73': {
+              'ok': true,
+              'value': {
+                'outpoint': '96fce684e7a800d90a6bff42846935d72d38a4cf60b80edaef9a8cdf76361c73:0',
+                'value': 23400,
+              },
+            },
+          },
+          'recentEvents': {
+            'ok': true,
+            'value': {
+              'deposits': [],
+              'withdrawals': [],
+              'bmm': [],
+            },
+          },
+        },
+      },
+      'relayer': {
+        'stateExists': true,
+      },
+    });
+
+    expect(status.detectedSlot, 1);
+    expect(status.slotMismatch, isFalse);
+    expect(status.isCanonicalSlotActive, isTrue);
+    expect(status.activeSlots, [1, 73]);
+    expect(status.ctipSidechain, 1);
+    expect(status.ctipValueSats, 8600);
+  });
 }
