@@ -3,22 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FastWithdrawalProvider.supportedLayer2Chains', () {
-    test('still includes the historical Thunder + BitNames pair', () {
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('Thunder'));
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('BitNames'));
+    test('exposes LiteverseEVM only for LitWindow', () {
+      expect(FastWithdrawalProvider.supportedLayer2Chains, ['LiteverseEVM']);
+      expect(FastWithdrawalProvider().layer2Chain, 'LiteverseEVM');
     });
 
-    test('exposes the other sidechains the FW server accepts', () {
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('BitAssets'));
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('ZSide'));
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('Photon'));
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('Truthcoin'));
-      expect(FastWithdrawalProvider.supportedLayer2Chains, contains('CoinShift'));
-    });
-
-    test('contains no duplicates', () {
+    test('does not expose upstream Bitcoin sidechains', () {
       final list = FastWithdrawalProvider.supportedLayer2Chains;
-      expect(list.toSet().length, list.length);
+      for (final chain in ['Thunder', 'BitNames', 'BitAssets', 'ZSide', 'Photon', 'Truthcoin', 'CoinShift']) {
+        expect(list, isNot(contains(chain)));
+      }
     });
   });
 }

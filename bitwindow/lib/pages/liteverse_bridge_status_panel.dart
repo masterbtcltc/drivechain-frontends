@@ -50,18 +50,13 @@ class _LiteverseBridgeOverviewCardState extends State<LiteverseBridgeOverviewCar
 
         return SailCard(
           title: 'LiteverseEVM',
-          subtitle: 'Read-only slot and bridge summary',
+          subtitle: 'Read-only slot 1 bridge summary',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (status.slotMismatch) ...[
-                _SlotMismatchBanner(status: status),
-                const SizedBox(height: SailStyleValues.padding12),
-              ],
               _MetricGrid(
                 children: [
-                  _MetricTile(label: 'Canonical slot', value: _canonicalLiteverseSlot.toString()),
-                  _MetricTile(label: 'Detected slot', value: status.detectedSlotLabel),
+                  _MetricTile(label: 'Sidechain slot', value: _canonicalLiteverseSlot.toString()),
                   _MetricTile(label: 'Litecoin network', value: status.litecoinChain ?? 'not available'),
                   _MetricTile(label: 'Litecoin height', value: status.litecoinHeight?.toString() ?? 'not available'),
                   _MetricTile(label: 'CTIP value', value: status.ctipValueLabel),
@@ -123,10 +118,6 @@ class _LiteverseBridgeStatusPanelState extends State<LiteverseBridgeStatusPanel>
                   child: SailText.secondary13(error.toString()),
                 )
               else if (status != null) ...[
-                if (status.slotMismatch) ...[
-                  _SlotMismatchBanner(status: status),
-                  const SizedBox(height: SailStyleValues.padding12),
-                ],
                 _SlotSummaryCard(status: status),
                 const SizedBox(height: SailStyleValues.padding12),
                 _ChainHealthCard(status: status),
@@ -167,41 +158,6 @@ class _ReadOnlyNotice extends StatelessWidget {
   }
 }
 
-class _SlotMismatchBanner extends StatelessWidget {
-  final LiteverseBridgeStatus status;
-
-  const _SlotMismatchBanner({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    const warningColor = Color(0xFFD97706);
-    final detected = status.detectedSlotLabel;
-
-    return Container(
-      padding: const EdgeInsets.all(SailStyleValues.padding12),
-      decoration: BoxDecoration(
-        color: warningColor.withValues(alpha: 0.14),
-        border: Border.all(color: warningColor.withValues(alpha: 0.4)),
-        borderRadius: SailStyleValues.borderRadius,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.warning_amber_rounded, color: warningColor, size: 18),
-          const SizedBox(width: SailStyleValues.padding08),
-          Expanded(
-            child: SailText.primary13(
-              'Slot mismatch: Liteverse target is slot $_canonicalLiteverseSlot, '
-              'but the current validated local stack is running slot $detected.',
-              color: warningColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _SlotSummaryCard extends StatelessWidget {
   final LiteverseBridgeStatus status;
 
@@ -210,13 +166,13 @@ class _SlotSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SailCard(
-      title: 'Slot Target',
-      subtitle: 'Canonical slot versus detected local stack',
+      title: 'LiteverseEVM',
+      subtitle: 'Canonical Litecoin/Liteverse sidechain',
       child: _MetricGrid(
         children: [
-          _MetricTile(label: 'Canonical slot', value: _canonicalLiteverseSlot.toString()),
-          _MetricTile(label: 'Detected slot', value: status.detectedSlotLabel),
-          _MetricTile(label: 'Slot 1 active', value: status.isCanonicalSlotActive ? 'yes' : 'no'),
+          _MetricTile(label: 'Sidechain slot', value: _canonicalLiteverseSlot.toString()),
+          _MetricTile(label: 'Slot status', value: status.isCanonicalSlotActive ? 'active' : 'slot 1 data unavailable'),
+          _MetricTile(label: 'Visible sidechain', value: 'LiteverseEVM'),
           _MetricTile(label: 'Active sidechains', value: status.activeSlotsLabel),
         ],
       ),
@@ -420,9 +376,7 @@ class LiteverseBridgeStatus {
     required this.relayerStateExists,
   });
 
-  bool get slotMismatch => detectedSlot != null && detectedSlot != _canonicalLiteverseSlot;
   bool get isCanonicalSlotActive => activeSlots.contains(_canonicalLiteverseSlot);
-  String get detectedSlotLabel => detectedSlot?.toString() ?? 'not available';
   String get activeSlotsLabel => activeSlots.isEmpty ? 'not available' : activeSlots.join(', ');
   String get opsHealthyLabel => opsHealthy ? 'healthy' : 'attention required';
   String get opsIssuesLabel => opsIssues.isEmpty ? 'none' : '${opsIssues.length} issue(s)';
@@ -437,8 +391,8 @@ class LiteverseBridgeStatus {
     return besuHealthy! ? 'healthy' : 'attention required';
   }
 
-  String get ctipValueLabel => ctipValueSats == null ? 'not available' : '$ctipValueSats sats';
-  String get ctipSidechainLabel => ctipSidechain == null ? 'not available' : ctipSidechain.toString();
+  String get ctipValueLabel => ctipValueSats == null ? 'Slot 1 data unavailable' : '$ctipValueSats sats';
+  String get ctipSidechainLabel => ctipSidechain == null ? 'Slot 1 data unavailable' : ctipSidechain.toString();
   String get recentDepositCountLabel => recentDepositCount?.toString() ?? 'not available';
   String get recentWithdrawalCountLabel => recentWithdrawalCount?.toString() ?? 'not available';
   String get bmmStatusLabel {
@@ -475,19 +429,18 @@ class LiteverseBridgeStatus {
     final ctipBySidechain = _map(enforcer['ctipBySidechain']);
     final activeSidechains = _list(enforcer['activeSidechains']);
     final detectedSlot = _asInt(config['sidechainId']) ?? _asInt(enforcer['configuredSidechainId']);
-    final ctipSlot = detectedSlot ?? _canonicalLiteverseSlot;
+    final ctipSlot = _canonicalLiteverseSlot;
     final ctip = _map(_map(ctipBySidechain[ctipSlot.toString()])['value']);
+    final canonicalSlotActive = activeSidechains.any(
+      (sidechain) => _asInt(_map(_map(sidechain)['proposal'])['sidechain_number']) == _canonicalLiteverseSlot,
+    );
 
     return LiteverseBridgeStatus(
       generatedAt: _asString(state['generatedAt']),
       opsHealthy: state['ok'] == true,
       opsIssues: _list(state['issues']).map((issue) => issue.toString()).toList(),
       detectedSlot: detectedSlot,
-      activeSlots: [
-        for (final sidechain in activeSidechains)
-          if (_asInt(_map(_map(sidechain)['proposal'])['sidechain_number']) != null)
-            _asInt(_map(_map(sidechain)['proposal'])['sidechain_number'])!,
-      ],
+      activeSlots: canonicalSlotActive ? const [_canonicalLiteverseSlot] : const [],
       litecoinChain: _asString(litecoin['chain']),
       litecoinHeight: _asInt(litecoin['blocks']),
       enforcerHealthy: enforcerContainer['ok'] is bool ? enforcerContainer['ok'] as bool : null,

@@ -5,9 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:sail_ui/rpcs/bitnames_rpc.dart';
 import 'package:sail_ui/rpcs/rpc_sidechain.dart';
-import 'package:sail_ui/rpcs/thunder_rpc.dart';
 
 enum FastWithdrawalStage {
   idle,
@@ -39,18 +37,10 @@ class FastWithdrawalProvider extends ChangeNotifier {
 
   static String get defaultServer => fastWithdrawalServers[0]['url']!;
 
-  /// Layer-2 chains the fast-withdrawal server accepts. Order is shown in
-  /// the dropdown. Auto-send (sending L2 funds from inside BitWindow) only
-  /// fires when [_getSidechainRPC] returns non-null; the rest fall back to
-  /// the user copying the payment address into their own L2 wallet.
+  /// LitWindow exposes LiteverseEVM as the Litecoin/Liteverse sidechain.
+  /// Auto-send stays unavailable until a LiteverseEVM RPC adapter is wired.
   static const List<String> supportedLayer2Chains = [
-    'Thunder',
-    'BitNames',
-    'BitAssets',
-    'ZSide',
-    'Photon',
-    'Truthcoin',
-    'CoinShift',
+    'LiteverseEVM',
   ];
 
   // Stage tracking
@@ -67,7 +57,7 @@ class FastWithdrawalProvider extends ChangeNotifier {
 
   // Form state
   String selectedServer = defaultServer;
-  String layer2Chain = 'Thunder';
+  String layer2Chain = supportedLayer2Chains.first;
 
   void setSelectedServer(String server) {
     selectedServer = server;
@@ -81,17 +71,6 @@ class FastWithdrawalProvider extends ChangeNotifier {
 
   /// Returns the SidechainRPC for the current layer2Chain, or null if not registered/connected.
   SidechainRPC? _getSidechainRPC() {
-    try {
-      if (layer2Chain == 'Thunder') {
-        final rpc = GetIt.I.get<ThunderRPC>();
-        return rpc.connected ? rpc : null;
-      } else if (layer2Chain == 'BitNames') {
-        final rpc = GetIt.I.get<BitnamesRPC>();
-        return rpc.connected ? rpc : null;
-      }
-    } catch (_) {
-      // Not registered
-    }
     return null;
   }
 

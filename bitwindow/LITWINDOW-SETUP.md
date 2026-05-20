@@ -48,11 +48,11 @@ Copy the matching `.example` files for local use and replace placeholders locall
 ## Liteverse Bridge Status
 
 LitWindow includes a read-only Liteverse Bridge Status panel under Sidechains.
-The panel reads the local Liteverse Ops API and is intended to make slot
-alignment visible while the fresh slot-1 devnet path is being prepared.
+The panel reads the local Liteverse Ops API and presents LiteverseEVM as the
+slot 1 Litecoin/Liteverse sidechain.
 
-- Canonical Liteverse slot: `1`
-- Current validated local stack may still report detected slot `73`
-- A slot mismatch warning is expected until a fresh slot-1 stack is built and validated
+- LiteverseEVM sidechain slot: `1`
+- Litecoin network: Litecoin Core Signet
 - The panel is read-only: it does not create peg-ins or peg-outs, sign transactions, activate slots, redeploy contracts, or modify Litecoin/enforcer/Besu/relayer/Ops state
+- If slot 1 data is unavailable, the panel reports that directly instead of falling back to historical migration slots
 - BMM/H* and M6/peg-out fields show `not available` until the local APIs expose those details directly

@@ -2,7 +2,7 @@ import 'package:bitwindow/pages/liteverse_bridge_status_panel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('LiteverseBridgeStatus parses slot mismatch and bridge evidence', () {
+  test('LiteverseBridgeStatus ignores legacy slots and requires slot 1 data', () {
     final status = LiteverseBridgeStatus.fromOpsState({
       'ok': true,
       'generatedAt': '2026-05-19T00:00:00.000Z',
@@ -62,19 +62,20 @@ void main() {
     expect(status.litecoinChain, 'signet');
     expect(status.litecoinHeight, 2015);
     expect(status.detectedSlot, 73);
-    expect(status.slotMismatch, isTrue);
     expect(status.isCanonicalSlotActive, isFalse);
-    expect(status.activeSlots, [73]);
+    expect(status.activeSlots, isEmpty);
+    expect(status.activeSlotsLabel, 'not available');
     expect(status.enforcerHealthyLabel, 'Pong');
     expect(status.besuHealthyLabel, 'healthy');
     expect(status.opsHealthyLabel, 'healthy');
-    expect(status.ctipSidechain, 73);
-    expect(status.ctipValueSats, 23400);
+    expect(status.ctipSidechain, isNull);
+    expect(status.ctipValueSats, isNull);
+    expect(status.ctipValueLabel, 'Slot 1 data unavailable');
     expect(status.bmmStatusLabel, 'no recent BMM events');
     expect(status.relayerStateLabel, 'state file not present');
   });
 
-  test('LiteverseBridgeStatus clears mismatch for canonical slot 1', () {
+  test('LiteverseBridgeStatus renders canonical slot 1 only', () {
     final status = LiteverseBridgeStatus.fromOpsState({
       'ok': true,
       'config': {
@@ -141,9 +142,9 @@ void main() {
     });
 
     expect(status.detectedSlot, 1);
-    expect(status.slotMismatch, isFalse);
     expect(status.isCanonicalSlotActive, isTrue);
-    expect(status.activeSlots, [1, 73]);
+    expect(status.activeSlots, [1]);
+    expect(status.activeSlotsLabel, '1');
     expect(status.ctipSidechain, 1);
     expect(status.ctipValueSats, 8600);
   });
